@@ -1,153 +1,120 @@
 # TruthLens — AI-Generated Media Detection Platform
 
-TruthLens is a full-stack, GenAI-powered web platform designed to detect synthetic and AI-generated media (images, audio, and video). Unlike traditional single-model detectors that suffer from high false-positive rates, TruthLens introduces a **dual-signal verification architecture** combining low-level pixel/frequency artifact analysis with high-level multimodal semantic reasoning.
+TruthLens is a full-stack digital forensics web platform designed to detect synthetic and AI-generated media across images, video, audio, and text. In an era where generative AI models (Midjourney, Flux, Stable Diffusion, Sora, ElevenLabs, GPT-4, Claude) produce hyper-realistic content, distinguishing truth from manipulation is critical for journalists, researchers, content moderators, and everyday citizens verifying digital information.
+
+Unlike single-model detectors that suffer from high false-positive rates, TruthLens introduces a **Dual-Engine Consensus Architecture** combining low-level neural frequency probing with high-level multimodal semantic reasoning.
 
 ---
 
-## The Dual-Detection Reliability Approach
+## 🌟 Why TruthLens Matters
 
-AI generators leave distinctive fingerprints across different levels of abstraction:
-1. **Pixel Frequency & GAN/Diffusion Footprints**: Subtle noise distributions, high-frequency spectral artifacts, and generator-specific artifacts.
-2. **Semantic, Anatomical & Contextual Inconsistencies**: Illogical reflections, warped background geometry, inconsistent lighting sources, and physical impossibilities.
+- **For Journalists & Fact-Checkers**: Instantly audit user-generated media, breaking news imagery, or viral recordings before publication with traceable audit IDs.
+- **For Researchers & Content Moderators**: Receive transparent, plain-language forensic explanations instead of black-box confidence scores.
+- **For Everyday Citizens**: Verify suspicious images, audio clips, text documents, or social media links to protect against disinformation and scam campaigns.
 
-TruthLens addresses this by orchestrating two independent AI models in parallel:
+---
+
+## ⚙️ How Dual-Engine Consensus Works
+
+TruthLens evaluates media assets through two independent detection signals operating in parallel:
+
+1. **Sightengine GenAI Probe (~70% Weight)**: Scans low-level spatial pixel frequencies, noise distributions, spectral GAN footprints, and diffusion model artifacts. Real-world benchmark testing demonstrated Sightengine's high precision on synthetic images, making it our primary weighted signal.
+2. **Google Gemini Multimodal Model (~30% Weight)**: Conducts high-level semantic, physical, and contextual reasoning (e.g., anatomical coherence, lighting physics, background geometry, reflection logic) and generates human-readable forensic explanations.
+3. **Automatic Fallback Mechanism**: If Gemini is unavailable (rate-limited or offline), TruthLens automatically falls back to a 100% Sightengine-weighted assessment accompanied by an automated, rule-based forensic explanation derived from Sightengine's signal breakdown.
 
 ```
                           ┌────────────────────────┐
                           │   Media Asset Input    │
-                          │ (Image / Video / Audio)│
+                          │ (Image / Video / Audio / Text) │
                           └───────────┬────────────┘
                                       │
                  ┌────────────────────┴────────────────────┐
                  │                                         │
                  ▼                                         ▼
    ┌───────────────────────────┐             ┌───────────────────────────┐
-   │ Detection Signal 1:       │             │ Detection Signal 2:       │
-   │ Sightengine GenAI Model   │             │ Google Gemini Multimodal  │
-   │                           │             │                           │
-   │ • Frequency artifact scan │             │ • Semantic reasoning      │
-   │ • Diffusion noise probe   │             │ • Cross-check consensus   │
-   │ • Score: 0.0 - 1.0        │             │ • Plain-language forensic │
-   └─────────────┬─────────────┘             │   explanation             │
-                 │                           └─────────────┬─────────────┘
+   │ Signal 1: Sightengine     │             │ Signal 2: Google Gemini   │
+   │ GenAI Neural Probe (70%)  │             │ Multimodal Vision/LLM(30%)│
+   │ • Spatial noise probe     │             │ • Semantic reasoning      │
+   │ • Spectral GAN footprints │             │ • Plain-language findings │
+   └─────────────┬─────────────┘             └─────────────┬─────────────┘
                  │                                         │
                  └────────────────────┬────────────────────┘
                                       │
                                       ▼
                       ┌───────────────────────────────┐
                       │    assessmentService.js       │
-                      │ • Reliability-weighted fusion │
-                      │ • Dynamic consensus scoring   │
-                      │ • Conflict / anomaly detection│
+                      │ • 70/30 weighted consensus    │
+                      │ • Automatic engine fallback   │
                       └───────────────┬───────────────┘
                                       │
                        ┌──────────────┴──────────────┐
                        ▼                             ▼
          ┌───────────────────────────┐ ┌───────────────────────────┐
          │   Supabase Postgres       │ │   TruthLens React UI      │
-         │   Persistent Audit Trail  │ │ • Side-by-Side Breakdown  │
-         │   analyses table          │ │ • Confidence Meter        │
-         └───────────────────────────┘ │ • Plain-Language Findings │
-                                       └───────────────────────────┘
+         │   Source-Traceable Audit  │ │ • Side-by-Side Breakdown  │
+         │   analyses table          │ │ • Audit Trail Record ID   │
+         └───────────────────────────┘ └───────────────────────────┘
 ```
-
-### Why Dual-Detection is Superior
-- **Reduced False Positives**: Single detectors frequently mistake compressed or stylized authentic photography for AI art. Cross-checking pixel-level scores against semantic inspection dramatically eliminates false flags.
-- **Explainability**: Rather than providing an opaque probability number, Google Gemini articulates exactly *why* the media is judged authentic or synthetic, detailing observable anomalies or genuine camera optics.
-- **Fail-Safe Robustness**: If one engine experiences network disruption or rate limits, the assessment service dynamically adapts weights while flagging single-engine status to the user.
 
 ---
 
-## Tech Stack & Architecture
+## 🛠️ Tech Stack & Architecture
 
-- **Frontend**: React 18, Vite, Vanilla CSS (Custom dark-mode glassmorphism design system, Lucide icons).
+- **Frontend**: React 18, Vite, Custom dark-mode glassmorphism design system, Lucide icons.
 - **Backend**: Vercel Serverless Functions (`api/analyze.js`, `api/analyze/[id].js`).
 - **Database**: Supabase (PostgreSQL `analyses` table).
-- **Detection Signal 1**: Sightengine API (`genai` model).
-- **Detection Signal 2 + Reasoning**: Google Gemini API (multimodal flash vision).
+- **Engine 1**: Sightengine API (`genai` model).
+- **Engine 2**: Google Gemini API (`gemini-3.6-flash`).
+- **Testing**: Vitest unit test suite covering scoring fusion, service mocks, and API input validation.
 
 ---
 
-## Folder Structure
+## 🔑 Environment Variables
 
-```
-truthlens/
-├── api/
-│   ├── analyze.js              # POST — runs both detections, saves to Supabase, returns result
-│   └── analyze/[id].js         # GET — fetch a saved result by UUID
-├── lib/
-│   ├── sightengineService.js   # Calls Sightengine GenAI API (URL & multipart upload)
-│   ├── geminiService.js        # Calls Gemini multimodal for independent assessment & reasoning
-│   ├── assessmentService.js    # Merges both scores into reliability-weighted verdict
-│   └── supabase.js             # Supabase client initialization and persistence
-├── src/
-│   ├── components/
-│   │   ├── FileUpload.jsx      # Drag & drop upload, media link input, quick test presets
-│   │   ├── AnalysisResult.jsx  # Side-by-side dual score cards, confidence meter, explanation
-│   │   └── MediaPreview.jsx    # Audio, video, and image player/previewer
-│   ├── pages/
-│   │   ├── Home.jsx            # Landing page with scanner animation
-│   │   └── Results.jsx         # Full analysis inspection & permalink retriever
-│   ├── services/
-│   │   └── api.js              # Frontend client service calling /api/analyze
-│   ├── App.jsx                 # Main layout and view state manager
-│   ├── main.jsx                # React mount entry point
-│   └── index.css               # Design system, cyber-forensics theme, animations
-├── package.json                # Project dependencies and build scripts
-├── vite.config.js              # Vite React config with local serverless API bridge
-├── vercel.json                 # Vercel deployment routing
-├── .env                        # Local environment variables
-└── README.md
-```
+Set the following keys in `.env` locally or in your **Vercel Dashboard > Project Settings > Environment Variables**:
+
+| Variable | Description |
+| :--- | :--- |
+| `SIGHTENGINE_API_USER` | Sightengine API User ID |
+| `SIGHTENGINE_API_SECRET` | Sightengine API Secret Key |
+| `GEMINI_API_KEY` | Google Gemini API Key |
+| `SUPABASE_URL` | Supabase Project URL |
+| `SUPABASE_ANON_KEY` | Supabase Anonymous Key |
 
 ---
 
-## Environment Variables
+## 🚀 Getting Started
 
-TruthLens reads credentials via `process.env`. Set these in your `.env` file locally and in your **Vercel Project Settings > Environment Variables**:
-
-| Variable | Description | Example |
-| :--- | :--- | :--- |
-| `SIGHTENGINE_API_USER` | Sightengine API User ID | `293727023` |
-| `SIGHTENGINE_API_SECRET` | Sightengine API Secret Key | `xn9k6fUZvP7PJnQSKawRdwHPxBCmf2YR` |
-| `GEMINI_API_KEY` | Google Gemini API Key | `AIzaSyA7LDeS...` |
-| `SUPABASE_URL` | Supabase Project URL | `https://fmqhpqujlughgpkgbmpk.supabase.co` |
-| `SUPABASE_ANON_KEY` | Supabase Anonymous Key | `eyJhbGciOi...` |
-
----
-
-## Getting Started
-
-### 1. Clone & Install Dependencies
+### 1. Clone & Install
 ```bash
-git clone <repository-url>
-cd truthlens
+git clone https://github.com/alan-k-albin/aidetector.git
+cd aidetector
 npm install
 ```
 
 ### 2. Configure Environment
-Create a `.env` file in the project root with the variables listed above.
+Create a `.env` file in the root directory with the environment variables listed above.
 
-### 3. Run Locally
-TruthLens includes a built-in serverless bridge inside `vite.config.js` that executes the `/api/analyze` functions directly during local development:
+### 3. Run Development Server
 ```bash
 npm run dev
 ```
 Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-### 4. Build for Production
+### 4. Run Test Suite
+```bash
+npm run test
+```
+
+### 5. Production Build
 ```bash
 npm run build
 ```
 
 ---
 
-## Deployment to Vercel
+## ⚠️ Known Limitations & MVP Tradeoffs
 
-TruthLens is engineered to deploy seamlessly as a single Vercel project:
-
-1. Push your repository to GitHub / GitLab.
-2. Import the project in the **Vercel Dashboard**.
-3. Framework Preset: **Vite** (detected automatically).
-4. Add the 5 required environment variables in the Vercel dashboard.
-5. Deploy! Vercel will build the frontend into static assets and deploy `/api/*` as edge/serverless functions.
+- **Supabase RLS Policy**: Row Level Security is currently disabled for MVP demonstration speed. Production deployment requires enabling RLS policies scoped to authenticated user sessions.
+- **Text AI Detection Imprecision**: AI text detection is inherently probabilistic across the software industry due to varying human writing styles, non-native English phrasings, and model overlapping.
+- **Experimental Audio & Video Probing**: Audio deepfake and video frame inspection models are experimental and provide heuristic signals rather than absolute proof.

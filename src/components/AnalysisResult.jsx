@@ -492,6 +492,36 @@ export default function AnalysisResult({ result, onReset }) {
           </article>
         );
       })()}
+
+      {/* Source-Traceable Verification Metadata Card */}
+      <article className="glass-card audit-trail-card" aria-label="Source Traceable Audit Context" style={{ marginTop: '20px', padding: '20px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.08)', background: 'rgba(15, 23, 42, 0.6)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
+          <Layers size={18} style={{ color: 'var(--accent-cyan)' }} aria-hidden="true" />
+          <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
+            Source-Traceable Audit Record
+          </h3>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', fontSize: '12px', color: 'var(--text-muted)' }}>
+          <div>
+            <strong style={{ color: 'var(--text-secondary)' }}>Audit Record ID:</strong>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', marginTop: '2px', wordBreak: 'break-all' }}>{id || 'Local session'}</div>
+          </div>
+          <div>
+            <strong style={{ color: 'var(--text-secondary)' }}>Analysis Timestamp:</strong>
+            <div style={{ marginTop: '2px' }}>{created_at ? new Date(created_at).toUTCString() : 'Just now'}</div>
+          </div>
+          <div>
+            <strong style={{ color: 'var(--text-secondary)' }}>Input Mode / Source:</strong>
+            <div style={{ marginTop: '2px', textTransform: 'capitalize' }}>{input_mode} mode ({media_type})</div>
+          </div>
+          <div>
+            <strong style={{ color: 'var(--text-secondary)' }}>Engine Weighting Pipeline:</strong>
+            <div style={{ marginTop: '2px' }}>
+              {isText ? 'Gemini Text LLM (100%)' : `Sightengine Probe (${seWeightPct}%) + Gemini (${gemWeightPct}%)`}
+            </div>
+          </div>
+        </div>
+      </article>
     </section>
   );
 }

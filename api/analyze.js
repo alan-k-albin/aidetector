@@ -1,7 +1,7 @@
 import { analyzeSightengine } from '../lib/sightengineService.js';
 import { analyzeGemini } from '../lib/geminiService.js';
 import { calculateAssessment } from '../lib/assessmentService.js';
-import { saveAnalysis, getAnalysisById } from '../lib/supabase.js';
+import { saveAnalysis, getAnalysisById, findExistingAnalysisByMediaUrl } from '../lib/supabase.js';
 
 // Security: Allowed MIME types for uploaded/fetched media files
 const ALLOWED_MIME_TYPES = new Set([
@@ -255,6 +255,32 @@ export default async function handler(req, res) {
         return res.status(400).json({
           error: 'Security Error',
           message: 'The provided media URL is invalid, non-HTTP/HTTPS, or references a restricted local network address.'
+        });
+      }
+
+      // Check cache first for existing URL analysis
+      const cached = await findExistingAnalysisByMediaUrl(resolvedMediaUrl);
+      if (cached) {
+        console.log(`[TruthLens Cache Hit] Serving cached result for URL: ${resolvedMediaUrl}`);
+        return res.status(200).json({
+          id: cached.id,
+          verdict: cached.verdict,
+          confidence: Number(cached.confidence),
+          explanation: cached.explanation,
+          breakdown: {
+            sightengine_score: cached.sightengine_result?.score ?? null,
+            gemini_score: cached.gemini_result?.score ?? null,
+            sightengine_weight: cached.media_type === 'text' ? 0.0 : 0.70,
+            gemini_weight: cached.media_type === 'text' ? 1.0 : 0.30,
+            consensus: cached.gemini_result?.agrees_with_sightengine ? 'Models Agreed' : 'Dual-Engine Consensus'
+          },
+          media_url: cached.media_url,
+          media_type: cached.media_type || 'image',
+          input_mode: cached.input_mode || 'link',
+          sightengine_result: cached.sightengine_result,
+          gemini_result: cached.gemini_result,
+          created_at: cached.created_at,
+          cached: true
         });
       }
 
