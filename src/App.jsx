@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, Shield, Cpu, ExternalLink } from 'lucide-react';
+import { Eye, Shield, Cpu, ExternalLink, Sun, Moon } from 'lucide-react';
 import Home from './pages/Home.jsx';
 import Results from './pages/Results.jsx';
 
@@ -7,6 +7,7 @@ export default function App() {
   const [currentResult, setCurrentResult] = useState(null);
   const [analysisId, setAnalysisId] = useState(null);
   const [currentPage, setCurrentPage] = useState('home'); // 'home' | 'results'
+  const [theme, setTheme] = useState('dark'); // 'dark' | 'light' (defaults to dark mode, tracked in React state)
 
   // Read ?id= query param on load
   useEffect(() => {
@@ -17,6 +18,10 @@ export default function App() {
       setCurrentPage('results');
     }
   }, []);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
 
   const handleAnalysisComplete = (result) => {
     setCurrentResult(result);
@@ -36,31 +41,56 @@ export default function App() {
   };
 
   return (
-    <div className="app-container">
+    <div className="app-container" data-theme={theme}>
       {/* Navbar */}
-      <header className="navbar">
+      <header className="navbar" role="banner">
         <div className="nav-inner">
-          <div className="brand-logo" onClick={handleReset}>
-            <div className="brand-icon">
-              <Eye size={20} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div
+              className="brand-logo"
+              onClick={handleReset}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleReset()}
+              aria-label="TruthLens Home"
+            >
+              <div className="brand-icon" aria-hidden="true">
+                <Eye size={20} />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <span className="brand-name">TruthLens</span>
+                <span className="brand-tag">v1.1</span>
+              </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <span className="brand-name">TruthLens</span>
-              <span className="brand-tag">v1.0</span>
-            </div>
+
+            {/* Accessible Theme Toggle Button next to branding */}
+            <button
+              type="button"
+              className="theme-toggle-btn"
+              onClick={toggleTheme}
+              aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            >
+              {theme === 'dark' ? (
+                <Sun size={17} className="theme-icon sun" aria-hidden="true" />
+              ) : (
+                <Moon size={17} className="theme-icon moon" aria-hidden="true" />
+              )}
+              <span className="theme-toggle-label">{theme === 'dark' ? 'Light' : 'Dark'}</span>
+            </button>
           </div>
 
           <div className="nav-badges">
             <div className="nav-pill">
-              <span className="status-dot" />
-              <span>Sightengine + Gemini Active</span>
+              <span className="status-dot" aria-hidden="true" />
+              <span>Sightengine (70%) + Gemini (30%)</span>
             </div>
           </div>
         </div>
       </header>
 
       {/* Main Container */}
-      <main className="main-content">
+      <main className="main-content" role="main">
         {currentPage === 'home' ? (
           <Home onAnalysisComplete={handleAnalysisComplete} />
         ) : (
@@ -73,10 +103,10 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="footer">
+      <footer className="footer" role="contentinfo">
         <p>
-          TruthLens — Dual-Signal AI Media Detection Platform · Powered by{' '}
-          <strong>Sightengine GenAI</strong> &amp; <strong>Google Gemini Multimodal</strong> · Persisted on{' '}
+          TruthLens v1.1 — Dual-Signal AI Media Detection Platform · Powered by{' '}
+          <strong>Sightengine GenAI (70%)</strong> &amp; <strong>Google Gemini Multimodal (30%)</strong> · Persisted on{' '}
           <strong>Supabase</strong>
         </p>
       </footer>

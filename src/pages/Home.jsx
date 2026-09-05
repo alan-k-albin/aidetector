@@ -1,20 +1,45 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Sparkles, Cpu, Brain, CheckCircle2, Loader2, AlertTriangle } from 'lucide-react';
+import { Shield, Sparkles, Cpu, Brain, CheckCircle2, Loader2, AlertTriangle, FileText } from 'lucide-react';
 import FileUpload from '../components/FileUpload.jsx';
 import { analyzeMedia } from '../services/api.js';
 
-const SCAN_STEPS = [
-  'Initializing multi-modal forensic pipeline...',
-  'Probing Sightengine GenAI model for diffusion & GAN artifacts...',
-  'Cross-checking with Google Gemini multimodal reasoning engine...',
-  'Calculating reliability-weighted consensus & saving to Supabase...'
-];
+const SCAN_STEPS_MAP = {
+  text: [
+    'Initializing linguistic forensic pipeline...',
+    'Analyzing semantic perplexity and syntactic burstiness...',
+    'Probing for formulaic LLM tropes and cadence patterns...',
+    'Synthesizing forensic text assessment & saving to Supabase...'
+  ],
+  audio: [
+    'Initializing acoustic speech forensic probe...',
+    'Analyzing spectral harmonics & robotic vocoder artifacts...',
+    'Evaluating speech prosody, cadence, and cloning hallmarks...',
+    'Generating experimental audio assessment & saving to Supabase...'
+  ],
+  video: [
+    'Initializing video keyframe extraction pipeline...',
+    'Probing keyframe with Sightengine GenAI neural detector...',
+    'Cross-checking with Google Gemini multimodal reasoning engine...',
+    'Calculating Sightengine-weighted consensus & saving to Supabase...'
+  ],
+  image: [
+    'Initializing multi-modal forensic pipeline...',
+    'Probing Sightengine GenAI model for diffusion & GAN artifacts...',
+    'Cross-checking with Google Gemini multimodal reasoning engine...',
+    'Calculating Sightengine-weighted consensus & saving to Supabase...'
+  ]
+};
 
 export default function Home({ onAnalysisComplete }) {
   const [isLoading, setIsLoading] = useState(false);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [scanPreviewUrl, setScanPreviewUrl] = useState(null);
+  const [scanTextSnippet, setScanTextSnippet] = useState(null);
+  const [activeScanType, setActiveScanType] = useState('image');
   const [errorMessage, setErrorMessage] = useState('');
+
+  // Dynamic steps based on media type
+  const currentSteps = SCAN_STEPS_MAP[activeScanType] || SCAN_STEPS_MAP.image;
 
   // Step simulation during analysis
   useEffect(() => {
@@ -22,25 +47,32 @@ export default function Home({ onAnalysisComplete }) {
     if (isLoading) {
       setCurrentStepIndex(0);
       interval = setInterval(() => {
-        setCurrentStepIndex((prev) => (prev < SCAN_STEPS.length - 1 ? prev + 1 : prev));
+        setCurrentStepIndex((prev) => (prev < currentSteps.length - 1 ? prev + 1 : prev));
       }, 2500);
     }
     return () => clearInterval(interval);
-  }, [isLoading]);
+  }, [isLoading, currentSteps]);
 
   const handleStartAnalysis = async (payload) => {
     setIsLoading(true);
     setErrorMessage('');
-    // Keep the original client-side preview URL (base64 data URL for uploads,
-    // or remote URL for links). This is never sent to the backend.
-    const localPreviewUrl = payload.fileData || payload.mediaUrl || null;
+    const type = payload.mediaType || 'image';
+    setActiveScanType(type);
+
+    const localPreviewUrl = payload.videoPreviewUrl || payload.fileData || payload.mediaUrl || null;
     setScanPreviewUrl(localPreviewUrl);
+    setScanTextSnippet(payload.textInput || null);
 
     try {
       const result = await analyzeMedia(payload);
-      // Enrich result with the local preview URL so MediaPreview can render
-      // it without needing the backend to echo back the full base64 payload.
-      onAnalysisComplete({ ...result, _localPreviewUrl: localPreviewUrl });
+      // Enrich result with the local preview so MediaPreview renders immediately
+      onAnalysisComplete({
+        ...result,
+        _localPreviewUrl: localPreviewUrl,
+        _localText: payload.textInput || null,
+        input_mode: payload.inputMode || 'file',
+        media_type: type
+      });
     } catch (err) {
       console.error('Analysis failed:', err);
       setErrorMessage(err.message || 'An error occurred during media analysis. Please try again.');
@@ -55,17 +87,17 @@ export default function Home({ onAnalysisComplete }) {
       <section className="hero-section" aria-labelledby="hero-main-title">
         <div className="hero-pill">
           <Sparkles size={14} aria-hidden="true" />
-          <span>Dual-Engine Deepfake & AI Media Detection</span>
+          <span>TruthLens v1.1 · Multi-Modal Forensic Detection</span>
         </div>
 
         <h1 id="hero-main-title" className="hero-title">
           Verify Media Authenticity with{' '}
-          <span className="text-gradient">Two Independent AI Signals</span>
+          <span className="text-gradient">Independent AI Signals</span>
         </h1>
 
         <p className="hero-subtitle">
-          TruthLens runs Sightengine's specialized pixel artifact neural probe alongside Google Gemini's
-          multimodal reasoning to synthesize a reliability-weighted verdict with plain-language explanation.
+          TruthLens leverages Sightengine's specialized pixel neural probe (70% weight) alongside Google Gemini's
+          multimodal and linguistic reasoning (30% weight) to synthesize a reliability-weighted verdict with plain-language explanation.
         </p>
 
         {/* Feature badge pills */}
@@ -73,19 +105,19 @@ export default function Home({ onAnalysisComplete }) {
           <div className="feature-pill-card" role="listitem">
             <Cpu size={16} style={{ color: 'var(--accent-cyan)' }} aria-hidden="true" />
             <span>
-              <strong>Engine 1:</strong> Sightengine GenAI
+              <strong>Engine 1:</strong> Sightengine GenAI (70% Weight)
             </span>
           </div>
           <div className="feature-pill-card" role="listitem">
             <Brain size={16} style={{ color: 'var(--accent-indigo)' }} aria-hidden="true" />
             <span>
-              <strong>Engine 2:</strong> Gemini 3.6 Multimodal
+              <strong>Engine 2:</strong> Gemini Flash (30% Weight + Text)
             </span>
           </div>
           <div className="feature-pill-card" role="listitem">
             <Shield size={16} style={{ color: 'var(--status-real)' }} aria-hidden="true" />
             <span>
-              <strong>Storage:</strong> Supabase Persistent Audit
+              <strong>Coverage:</strong> Image · Video · Audio · Text
             </span>
           </div>
         </div>
@@ -116,15 +148,28 @@ export default function Home({ onAnalysisComplete }) {
       {/* Upload Zone or Scanning State */}
       {isLoading ? (
         <div
-          className="glass-card upload-container scanner-overlay"
+          className="glass-card upload-container scanner-overlay fade-in"
           role="status"
           aria-live="polite"
           aria-busy="true"
         >
-          {scanPreviewUrl && (
+          {scanPreviewUrl && activeScanType !== 'text' && (
             <div className="scanner-media-preview-box">
               <img src={scanPreviewUrl} alt="Scanning preview in progress" className="scanner-img" />
               <div className="laser-beam" aria-hidden="true" />
+            </div>
+          )}
+
+          {scanTextSnippet && activeScanType === 'text' && (
+            <div className="scanner-text-snippet-box">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px', color: 'var(--accent-cyan)', fontSize: '12px' }}>
+                <FileText size={14} aria-hidden="true" />
+                <span>Text Stream Probing</span>
+              </div>
+              <p className="scanner-text-content">
+                "{scanTextSnippet.slice(0, 180)}..."
+              </p>
+              <div className="laser-beam-horizontal" aria-hidden="true" />
             </div>
           )}
 
@@ -134,7 +179,7 @@ export default function Home({ onAnalysisComplete }) {
           </div>
 
           <div className="progress-steps-list">
-            {SCAN_STEPS.map((step, index) => {
+            {currentSteps.map((step, index) => {
               const isDone = index < currentStepIndex;
               const isActive = index === currentStepIndex;
               return (
@@ -155,8 +200,10 @@ export default function Home({ onAnalysisComplete }) {
             })}
           </div>
 
+          <div className="scanning-skeleton-bar" aria-hidden="true" />
+
           <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-            Processing dual model signals · Typically takes 4-8 seconds
+            Processing multi-modal signals · Typically takes 3-12 seconds
           </p>
         </div>
       ) : (

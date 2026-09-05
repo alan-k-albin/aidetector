@@ -4,16 +4,25 @@
  */
 
 /**
- * Analyzes an uploaded file or remote media URL.
+ * Analyzes an uploaded file, remote media URL, or raw text.
  *
  * @param {Object} payload
  * @param {string} [payload.mediaUrl]
  * @param {string} [payload.fileData] - Base64 data URL
- * @param {string} [payload.mediaType] - 'image' | 'video' | 'audio'
+ * @param {string} [payload.textInput] - Raw text to analyze
+ * @param {string} [payload.mediaType] - 'image' | 'video' | 'audio' | 'text'
+ * @param {string} [payload.inputMode] - 'file' | 'link' | 'text'
  * @param {string} [payload.fileName]
  * @returns {Promise<Object>} The combined analysis result
  */
-export async function analyzeMedia({ mediaUrl, fileData, mediaType = 'image', fileName = 'media' }) {
+export async function analyzeMedia({
+  mediaUrl,
+  fileData,
+  textInput,
+  mediaType = 'image',
+  inputMode = 'file',
+  fileName = 'media'
+}) {
   const response = await fetch('/api/analyze', {
     method: 'POST',
     headers: {
@@ -22,7 +31,9 @@ export async function analyzeMedia({ mediaUrl, fileData, mediaType = 'image', fi
     body: JSON.stringify({
       mediaUrl,
       fileData,
+      textInput,
       mediaType,
+      inputMode,
       fileName
     })
   });
