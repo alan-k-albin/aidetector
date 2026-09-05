@@ -1016,6 +1016,19 @@ body {
   letter-spacing: 0;
 }
 
+.explanation-fallback-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: #fbbf24;
+}
+
 /* ==========================================================================
    THEME: LIGHT MODE (WCAG AA Compliant Contrast)
    ========================================================================== */
@@ -1056,8 +1069,9 @@ body {
 }
 
 .app-container[data-theme="light"] .navbar {
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.88);
   border-bottom-color: var(--border-subtle);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .app-container[data-theme="light"] .brand-name {
@@ -1066,34 +1080,285 @@ body {
   -webkit-text-fill-color: transparent;
 }
 
+.app-container[data-theme="light"] .brand-tag {
+  background: #ede9fe;
+  color: #4f46e5;
+  border-color: #c7d2fe;
+}
+
+.app-container[data-theme="light"] .nav-pill {
+  background: #ffffff;
+  color: #1e293b;
+  border-color: #cbd5e1;
+  font-weight: 500;
+}
+
 .app-container[data-theme="light"] .footer {
-  background: rgba(248, 250, 252, 0.9);
+  background: rgba(248, 250, 252, 0.95);
   border-top-color: var(--border-subtle);
+  color: #475569;
+}
+
+/* Light mode Hero Elements */
+.app-container[data-theme="light"] .hero-title {
+  color: #0f172a;
+}
+
+.app-container[data-theme="light"] .hero-subtitle {
+  color: #334155;
+}
+
+.app-container[data-theme="light"] .hero-pill {
+  background: #ffffff;
+  color: #0284c7;
+  border-color: #cbd5e1;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.app-container[data-theme="light"] .feature-pill-card {
+  background: #ffffff;
+  color: #1e293b;
+  border-color: #e2e8f0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+/* Light mode Form & Upload Controls */
+.app-container[data-theme="light"] .upload-tabs {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+}
+
+.app-container[data-theme="light"] .upload-tab {
+  color: #475569;
+}
+
+.app-container[data-theme="light"] .upload-tab.active {
+  background: #ffffff;
+  color: #0284c7;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.app-container[data-theme="light"] .dropzone {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
+
+.app-container[data-theme="light"] .dropzone-title {
+  color: #0f172a;
+}
+
+.app-container[data-theme="light"] .dropzone-desc {
+  color: #475569;
 }
 
 .app-container[data-theme="light"] .input-styled {
-  background: rgba(255, 255, 255, 0.95);
+  background: #ffffff;
   color: #0f172a;
-  border-color: rgba(15, 23, 42, 0.15);
+  border-color: #cbd5e1;
 }
 
-.app-container[data-theme="light"] .media-preview-container {
-  background: rgba(241, 245, 249, 0.9);
-  border-color: var(--border-subtle);
+.app-container[data-theme="light"] .input-styled:focus {
+  border-color: #0284c7;
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+}
+
+.app-container[data-theme="light"] .btn-primary {
+  background: linear-gradient(135deg, #0284c7 0%, #4f46e5 100%);
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+}
+
+.app-container[data-theme="light"] .btn-secondary {
+  background: #ffffff;
+  color: #1e293b;
+  border-color: #cbd5e1;
+  font-weight: 600;
+}
+
+.app-container[data-theme="light"] .btn-secondary:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
 }
 
 .app-container[data-theme="light"] .sample-chip {
-  background: rgba(255, 255, 255, 0.9);
-  border-color: var(--border-subtle);
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.app-container[data-theme="light"] .sample-chip-name {
+  color: #0f172a;
+}
+
+.app-container[data-theme="light"] .sample-chip-type {
+  color: #64748b;
+}
+
+/* Light mode Progress & Scanner */
+.app-container[data-theme="light"] .progress-step-item {
+  background: #ffffff;
+  color: #334155;
+  border-color: #e2e8f0;
+}
+
+.app-container[data-theme="light"] .progress-step-item.active {
+  background: #f0f9ff;
+  color: #0369a1;
+  border-color: #7dd3fc;
+}
+
+.app-container[data-theme="light"] .progress-step-item.done {
+  background: #f0fdf4;
+  color: #15803d;
+  border-color: #86efac;
+}
+
+/* Light mode Verdict & Confidence Cards (WCAG AA High Contrast) */
+.app-container[data-theme="light"] .verdict-hero-card.ai-generated {
+  background: linear-gradient(135deg, #fef2f2 0%, #ffffff 100%);
+  border-color: #fca5a5;
+  box-shadow: 0 8px 30px rgba(220, 38, 38, 0.08);
+}
+
+.app-container[data-theme="light"] .verdict-hero-card.authentic {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+  border-color: #86efac;
+  box-shadow: 0 8px 30px rgba(5, 150, 105, 0.08);
+}
+
+.app-container[data-theme="light"] .verdict-hero-card.uncertain {
+  background: linear-gradient(135deg, #fffbeb 0%, #ffffff 100%);
+  border-color: #fde68a;
+  box-shadow: 0 8px 30px rgba(217, 119, 6, 0.08);
+}
+
+.app-container[data-theme="light"] .verdict-title {
+  color: #0f172a;
+}
+
+.app-container[data-theme="light"] .verdict-summary-line {
+  color: #334155;
+}
+
+.app-container[data-theme="light"] .badge-ai {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fca5a5;
+  font-weight: 700;
+}
+
+.app-container[data-theme="light"] .badge-authentic {
+  background: #dcfce7;
+  color: #14532d;
+  border-color: #86efac;
+  font-weight: 700;
+}
+
+.app-container[data-theme="light"] .badge-uncertain {
+  background: #fef3c7;
+  color: #854d0e;
+  border-color: #fcd34d;
+  font-weight: 700;
+}
+
+.app-container[data-theme="light"] .confidence-gauge-box {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.app-container[data-theme="light"] .confidence-number {
+  background: linear-gradient(135deg, #0f172a 30%, #0284c7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.app-container[data-theme="light"] .confidence-label {
+  color: #475569;
+  font-weight: 700;
 }
 
 .app-container[data-theme="light"] .confidence-bar-track {
-  background: rgba(15, 23, 42, 0.08);
+  background: #e2e8f0;
+}
+
+/* Light mode Engine Cards & Reasoning */
+.app-container[data-theme="light"] .engine-card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.06);
+}
+
+.app-container[data-theme="light"] .engine-name {
+  color: #0f172a;
+}
+
+.app-container[data-theme="light"] .engine-role {
+  color: #475569;
+}
+
+.app-container[data-theme="light"] .engine-description {
+  color: #334155;
+}
+
+.app-container[data-theme="light"] .engine-score-unit {
+  color: #475569;
+}
+
+.app-container[data-theme="light"] .explanation-card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.06);
+}
+
+.app-container[data-theme="light"] .explanation-body {
+  color: #1e293b;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.app-container[data-theme="light"] .explanation-fallback-note {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fde68a;
+}
+
+.app-container[data-theme="light"] .file-type-pill {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  font-weight: 600;
+}
+
+.app-container[data-theme="light"] .consensus-tag {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-color: #7dd3fc;
+  font-weight: 700;
+}
+
+.app-container[data-theme="light"] .artifact-pill {
+  background: #ede9fe;
+  color: #5b21b6;
+  border-color: #ddd6fe;
+  font-weight: 600;
+}
+
+.app-container[data-theme="light"] .media-preview-container {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
 }
 
 .app-container[data-theme="light"] .engine-unavailable {
-  background: rgba(245, 158, 11, 0.08);
-  border-color: rgba(217, 119, 6, 0.35);
+  background: #fffbeb;
+  border-color: #fcd34d;
+  color: #b45309;
+}
+
+.app-container[data-theme="light"] .engine-unavailable-sub {
+  color: #78350f;
 }
 
 /* ==========================================================================

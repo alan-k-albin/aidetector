@@ -1,7 +1,7 @@
 import { analyzeSightengine } from '../lib/sightengineService.js';
 import { analyzeGemini } from '../lib/geminiService.js';
 import { calculateAssessment } from '../lib/assessmentService.js';
-import { saveAnalysis } from '../lib/supabase.js';
+import { saveAnalysis, getAnalysisById } from '../lib/supabase.js';
 
 // Security: Allowed MIME types for uploaded/fetched media files
 const ALLOWED_MIME_TYPES = new Set([
@@ -75,10 +75,62 @@ export default async function handler(req, res) {
     return;
   }
 
+  // Handle GET /api/analyze?id=... as query-parameter lookup fallback
+  if (req.method === 'GET') {
+    let id = req.query?.id;
+    if (!id && req.url && req.url.includes('?')) {
+      try {
+        const parsedUrl = new URL(req.url, 'http://localhost');
+        id = parsedUrl.searchParams.get('id');
+      } catch (e) {}
+    }
+
+    if (!id) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Analysis ID is required for GET requests'
+      });
+    }
+
+    try {
+      const record = await getAnalysisById(id);
+      if (!record) {
+        return res.status(404).json({
+          error: 'Analysis not found',
+          message: `No analysis found with ID: ${id}`
+        });
+      }
+      return res.status(200).json({
+        id: record.id,
+        verdict: record.verdict,
+        confidence: Number(record.confidence),
+        explanation: record.explanation,
+        breakdown: {
+          sightengine_score: record.sightengine_result?.score ?? (record.sightengine_result?.type?.ai_generated ?? null),
+          gemini_score: record.gemini_result?.score ?? null,
+          sightengine_weight: record.media_type === 'text' ? 0.0 : 0.70,
+          gemini_weight: record.media_type === 'text' ? 1.0 : 0.30,
+          consensus: record.gemini_result?.agrees_with_sightengine ? 'Models Agreed' : 'Dual-Engine Consensus'
+        },
+        media_url: record.media_url,
+        media_type: record.media_type || 'image',
+        input_mode: record.input_mode || 'file',
+        sightengine_result: record.sightengine_result,
+        gemini_result: record.gemini_result,
+        created_at: record.created_at
+      });
+    } catch (err) {
+      return res.status(500).json({
+        error: 'Internal Server Error',
+        message: err.message || 'Failed to fetch analysis'
+      });
+    }
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({
       error: 'Method Not Allowed',
-      message: 'Only POST requests are supported on /api/analyze'
+      message: 'Only GET and POST requests are supported on /api/analyze'
     });
   }
 

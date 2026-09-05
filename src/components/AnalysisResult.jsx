@@ -17,6 +17,7 @@ import {
   Sliders
 } from 'lucide-react';
 import MediaPreview from './MediaPreview.jsx';
+import { generateSightengineFallbackExplanation } from '../../lib/assessmentService.js';
 
 export default function AnalysisResult({ result, onReset }) {
   const [copied, setCopied] = useState(false);
@@ -28,6 +29,7 @@ export default function AnalysisResult({ result, onReset }) {
     verdict = 'Uncertain',
     confidence = 50,
     explanation = '',
+    explanation_source,
     breakdown = {},
     media_url,
     _localPreviewUrl,
@@ -439,32 +441,57 @@ export default function AnalysisResult({ result, onReset }) {
       </div>
 
       {/* Forensic Reasoning & Explanation Card */}
-      <article className="glass-card explanation-card" aria-label="Forensic Reasoning Explanation">
-        <div className="explanation-header">
-          <FileText size={20} style={{ color: 'var(--accent-cyan)' }} aria-hidden="true" />
-          <h2>Forensic Reasoning &amp; Findings</h2>
-        </div>
-        <p className="explanation-body">{explanation}</p>
+      {(() => {
+        const isGeminiExplanation = gemAvailable &&
+          explanation &&
+          explanation.length > 30 &&
+          !explanation.toLowerCase().includes('temporarily unavailable') &&
+          !explanation.toLowerCase().includes('experienced an error');
 
-        {result.gemini_result?.artifacts_detected && result.gemini_result.artifacts_detected.length > 0 && (
-          <div className="artifacts-tag-list" aria-label="Detected forensic signals">
-            <span style={{ fontSize: '12px', color: 'var(--text-muted)', alignSelf: 'center', marginRight: '6px' }}>
-              Detected Signals:
-            </span>
-            {result.gemini_result.artifacts_detected.map((artifact, i) => (
-              <span key={i} className="artifact-pill">
-                {artifact}
-              </span>
-            ))}
-          </div>
-        )}
+        const displayExplanation = isGeminiExplanation
+          ? explanation
+          : (explanation && !explanation.toLowerCase().includes('temporarily unavailable') && !explanation.toLowerCase().includes('experienced an error')
+              ? explanation
+              : generateSightengineFallbackExplanation(result.sightengine_result, verdict, media_type));
 
-        {created_at && (
-          <div style={{ marginTop: '20px', fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-            Analysis Timestamp: {new Date(created_at).toLocaleString()} · Record ID: {id}
-          </div>
-        )}
-      </article>
+        const isFallback = !isGeminiExplanation || explanation_source === 'sightengine_fallback';
+
+        return (
+          <article className="glass-card explanation-card" aria-label="Forensic Reasoning Explanation">
+            <div className="explanation-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                <FileText size={20} style={{ color: 'var(--accent-cyan)' }} aria-hidden="true" />
+                <h2>Forensic Reasoning &amp; Findings</h2>
+              </div>
+              {isFallback && !isText && (
+                <span className="explanation-fallback-note">
+                  Explanation generated from Sightengine signals only
+                </span>
+              )}
+            </div>
+            <p className="explanation-body">{displayExplanation}</p>
+
+            {result.gemini_result?.artifacts_detected && result.gemini_result.artifacts_detected.length > 0 && (
+              <div className="artifacts-tag-list" aria-label="Detected forensic signals">
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)', alignSelf: 'center', marginRight: '6px' }}>
+                  Detected Signals:
+                </span>
+                {result.gemini_result.artifacts_detected.map((artifact, i) => (
+                  <span key={i} className="artifact-pill">
+                    {artifact}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {created_at && (
+              <div style={{ marginTop: '20px', fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                Analysis Timestamp: {new Date(created_at).toLocaleString()} · Record ID: {id}
+              </div>
+            )}
+          </article>
+        );
+      })()}
     </section>
   );
 }

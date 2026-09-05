@@ -54,6 +54,7 @@ export async function analyzeMedia({
 
 /**
  * Fetches a previously saved analysis record by ID from Supabase via API.
+ * Uses robust routing with query param fallback to prevent 'Unexpected token <' errors.
  *
  * @param {string} id
  * @returns {Promise<Object>}
@@ -61,23 +62,45 @@ export async function analyzeMedia({
 export async function getAnalysis(id) {
   if (!id) throw new Error('Analysis ID is required');
 
-  const response = await fetch(`/api/analyze/${id}`, {
+  const cleanId = encodeURIComponent(id.trim());
+
+  // 1. Try dynamic route /api/analyze/:id
+  let response = await fetch(`/api/analyze/${cleanId}`, {
     method: 'GET',
     headers: {
       'Accept': 'application/json'
     }
   });
 
-  if (!response.ok) {
-    let errorDetail = 'Analysis not found';
+  // 2. If the response returned HTML or 404/500, attempt query parameter fallback /api/analyze?id=:id
+  const contentType = response.headers.get('content-type') || '';
+  if (!response.ok || !contentType.includes('application/json')) {
     try {
-      const errData = await response.json();
-      errorDetail = errData.message || errData.error || errorDetail;
-    } catch (e) {
-      errorDetail = `Server returned status ${response.status}`;
+      const queryResponse = await fetch(`/api/analyze?id=${cleanId}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+      const queryContentType = queryResponse.headers.get('content-type') || '';
+      if (queryResponse.ok && queryContentType.includes('application/json')) {
+        response = queryResponse;
+      }
+    } catch (fallbackErr) {
+      console.warn('Fallback query parameter fetch error:', fallbackErr);
     }
-    throw new Error(errorDetail);
   }
 
-  return await response.json();
+  const finalContentType = response.headers.get('content-type') || '';
+  if (!finalContentType.includes('application/json')) {
+    throw new Error(`Analysis record #${id} could not be retrieved from server (received non-JSON response).`);
+  }
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || data.error || `Failed to fetch analysis record (${response.status})`);
+  }
+
+  return data;
 }
+

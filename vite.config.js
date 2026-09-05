@@ -70,11 +70,18 @@ function vercelApiDevPlugin() {
           return;
         }
 
-        // GET /api/analyze/:id
-        if (url.startsWith('/api/analyze/') && req.method === 'GET') {
+        // GET /api/analyze/:id or GET /api/analyze?id=...
+        if ((url === '/api/analyze' || url.startsWith('/api/analyze?') || url.startsWith('/api/analyze/')) && req.method === 'GET') {
           try {
-            const parts = url.split('?')[0].split('/');
-            const id = parts[parts.length - 1];
+            let id = null;
+            if (url.includes('?')) {
+              const queryParams = new URL(url, 'http://localhost').searchParams;
+              id = queryParams.get('id');
+            }
+            if (!id && url.startsWith('/api/analyze/')) {
+              const parts = url.split('?')[0].split('/');
+              id = parts[parts.length - 1];
+            }
 
             const { default: handler } = await import('./api/analyze/[id].js');
 

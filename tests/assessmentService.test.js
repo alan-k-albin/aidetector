@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { calculateAssessment } from '../lib/assessmentService.js';
+import {
+  calculateAssessment,
+  generateSightengineFallbackExplanation
+} from '../lib/assessmentService.js';
 
-describe('assessmentService - TruthLens v1.1 Reliability-Weighted Assessment', () => {
+describe('assessmentService - TruthLens v1.1 Reliability-Weighted Assessment & Reasoning', () => {
   it('correctly applies 70% Sightengine / 30% Gemini weighting when both signals succeed', () => {
-    // SE: 0.90, Gemini: 0.60
-    // Expected combined: (0.90 * 0.70) + (0.60 * 0.30) = 0.63 + 0.18 = 0.81
     const sightengineResult = { success: true, score: 0.90 };
     const geminiResult = {
       success: true,
@@ -20,6 +21,8 @@ describe('assessmentService - TruthLens v1.1 Reliability-Weighted Assessment', (
     expect(result.breakdown.gemini_weight).toBe(0.30);
     expect(result.breakdown.combined_score).toBeCloseTo(0.81, 2);
     expect(result.breakdown.consensus).toContain('Moderate Agreement (70/30 Consensus)');
+    expect(result.explanation_source).toBe('gemini');
+    expect(result.explanation).toBe(geminiResult.explanation);
   });
 
   it('correctly synthesizes when both engines strongly detect AI-generated media (Consensus)', () => {
@@ -74,17 +77,64 @@ describe('assessmentService - TruthLens v1.1 Reliability-Weighted Assessment', (
     expect(result.confidence).toBeLessThanOrEqual(65);
   });
 
-  it('gracefully degrades to 100% Sightengine when Gemini is unavailable', () => {
-    const sightengineResult = { success: true, score: 0.88 };
-    const geminiResult = { success: false, score: null, error: 'API timeout' };
+  it('CRITICAL FIX 1: Always provides rich Sightengine reasoning when Gemini is unavailable', () => {
+    const sightengineResult = {
+      success: true,
+      score: 0.94,
+      raw: { type: { ai_generated: 0.94, photo: 0.05, illustration: 0.85 } }
+    };
+    const geminiResult = {
+      success: false,
+      score: null,
+      explanation: 'Gemini verification signal temporarily unavailable (timeout).'
+    };
 
     const result = calculateAssessment(sightengineResult, geminiResult);
 
     expect(result.verdict).toBe('Likely AI-generated');
     expect(result.breakdown.sightengine_weight).toBe(1.0);
     expect(result.breakdown.gemini_weight).toBe(0.0);
-    expect(result.breakdown.combined_score).toBe(0.88);
-    expect(result.breakdown.consensus).toContain('Single Engine Mode');
+    expect(result.breakdown.combined_score).toBe(0.94);
+    // Crucial check: Explanation must NEVER be empty or just the timeout message
+    expect(result.explanation_source).toBe('sightengine_fallback');
+    expect(result.explanation).toContain("Sightengine's neural pixel probe detected an elevated AI-generation probability");
+    expect(result.explanation).toContain('94%');
+    expect(result.explanation).not.toContain('temporarily unavailable');
+  });
+
+  it('CRITICAL FIX 1: Provides rich Sightengine reasoning for authentic media when Gemini fails', () => {
+    const sightengineResult = {
+      success: true,
+      score: 0.02,
+      raw: { type: { ai_generated: 0.02, photo: 0.98 } }
+    };
+    const geminiResult = {
+      success: false,
+      score: null,
+      error: 'Gemini rate limit exceeded'
+    };
+
+    const result = calculateAssessment(sightengineResult, geminiResult);
+
+    expect(result.verdict).toBe('Likely Authentic');
+    expect(result.explanation_source).toBe('sightengine_fallback');
+    expect(result.explanation).toContain("Sightengine's neural pixel probe detected a minimal AI-generation probability");
+    expect(result.explanation).toContain('2%');
+    expect(result.explanation).toContain('natural high-frequency optical sensor grain');
+  });
+
+  it('generateSightengineFallbackExplanation produces structured explanations for all verdict bands', () => {
+    const aiExpl = generateSightengineFallbackExplanation({ score: 0.91 }, 'Likely AI-generated', 'image');
+    expect(aiExpl).toContain('91%');
+    expect(aiExpl).toContain('diffusion latent fingerprints');
+
+    const authExpl = generateSightengineFallbackExplanation({ score: 0.04 }, 'Likely Authentic', 'image');
+    expect(authExpl).toContain('4%');
+    expect(authExpl).toContain('optical sensor grain');
+
+    const uncExpl = generateSightengineFallbackExplanation({ score: 0.52 }, 'Uncertain', 'image');
+    expect(uncExpl).toContain('52%');
+    expect(uncExpl).toContain('inconclusive verdict');
   });
 
   it('gracefully degrades to 100% Gemini when Sightengine is unavailable', () => {
