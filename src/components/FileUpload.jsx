@@ -173,10 +173,7 @@ export default function FileUpload({ onAnalyze, isLoading }) {
   const handleTextSubmit = (e) => {
     e.preventDefault();
     const cleanText = textInput.trim();
-    if (cleanText.length < 20) {
-      setFileError('Please enter at least 20 characters of text for meaningful forensic inspection.');
-      return;
-    }
+    if (!cleanText) return; // should not reach here (button disabled when empty)
     setFileError('');
 
     onAnalyze({
@@ -413,8 +410,8 @@ export default function FileUpload({ onAnalyze, isLoading }) {
                 <label htmlFor="text-input-field" style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
                   Paste article, essay, or email text for LLM forensic examination:
                 </label>
-                <span style={{ fontSize: '12px', color: textInput.length >= 20 ? 'var(--text-secondary)' : 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                  {textInput.length} chars {textInput.length < 20 ? '(min 20)' : ''}
+                <span style={{ fontSize: '12px', color: textInput.trim().length > 0 ? 'var(--text-secondary)' : 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                  {textInput.length} chars{textInput.trim().length > 0 && textInput.trim().length < 20 ? ' (min 20 for analysis)' : ''}
                 </span>
               </div>
               <textarea
@@ -434,7 +431,6 @@ export default function FileUpload({ onAnalyze, isLoading }) {
                 onChange={(e) => setTextInput(e.target.value)}
                 disabled={isLoading}
                 maxLength={25000}
-                required
                 aria-label="Text to analyze for AI generation"
               />
             </div>
@@ -447,7 +443,7 @@ export default function FileUpload({ onAnalyze, isLoading }) {
               <button
                 type="submit"
                 className="btn-primary"
-                disabled={isLoading || textInput.trim().length < 20}
+                disabled={isLoading || textInput.trim().length === 0}
                 aria-label="Analyze text for AI generation"
               >
                 <span>Analyze Text</span>
